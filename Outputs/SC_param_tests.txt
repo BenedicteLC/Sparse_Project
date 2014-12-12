@@ -1,0 +1,10 @@
+Experiment 1, training accuracy: 0.936, validation accuracy: 0.509 
+Experiment 2, training accuracy: 0.946, validation accuracy: 0.465 
+Experiment 3, training accuracy: 0.934, validation accuracy: 0.573 
+Experiment 4, training accuracy: 0.986, validation accuracy: 0.544 
+Experiment 5, training accuracy: 0.983, validation accuracy: 0.627 
+Experiment 6, training accuracy: 0.824, validation accuracy: 0.452 
+Experiment 7, training accuracy: 0.986, validation accuracy: 0.530 
+Experiment 8, training accuracy: 0.981, validation accuracy: 0.566 
+Experiment 9, training accuracy: 0.984, validation accuracy: 0.541 
+Experiment 10, training accuracy: 0.957, validation accuracy: 0.630 <<<
