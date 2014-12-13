@@ -1,3 +1,8 @@
 Experiment 1, training accuracy: 0.838, validation accuracy: 0.816 
 Experiment 2, training accuracy: 0.837, validation accuracy: 0.820 
+Experiment 3, training accuracy: 0.854, validation accuracy: 0.816 
+Experiment 4, training accuracy: 0.897, validation accuracy: 0.858, TEST accuracy: 86.8%
 Experiment 5, training accuracy: 0.850, validation accuracy: 0.829 
+Experiment 6, training accuracy: 0.885, validation accuracy: 0.849 
+Experiment 7, training accuracy: 0.883, validation accuracy: 0.849 
+Experiment 8, training accuracy: 0.859, validation accuracy: 0.834 

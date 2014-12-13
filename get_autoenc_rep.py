@@ -7,7 +7,7 @@ import mlpython.datasets.store as dataset_store
 from autoencoder import Autoencoder
 import pickle
 
-experiment_number = 150
+experiment_number = 100
 
 def train():
 
@@ -87,20 +87,15 @@ def get_representation():
 	filename = "Models/AutoE/validset%d.pkl"%(experiment_number)
 	pickle.dump( np.asarray(encoded_validset) , open(filename, 'wb'))
 
-	#Note: only need to do it for the best hyper-params at the end.
-	# counter = 0
-	# print "Encoding the testset..."
-	# for input,target in testset:
-	#     #Encode the sample.
-	#     h = myObject.encode(input)
-	#     encoded_testset.append(h)
-	    
-	#     counter +=1
-	#     if counter == 1000:
-	#         break
-
-    # filename = "Models/AutoE/testset%d.pkl"%(experiment_number)
-    # pickle.dump( np.asarray(encoded_testset), open(filename, 'wb'))
+	#Note: only need to do it for the best hyper-params at the end.	
+	print "Encoding the testset..."
+	for input,target in testset:
+		#Encode the sample.
+		h = myObject.encode(input)
+		encoded_testset.append(h)  
+	
+	filename = "Models/AutoE/testset%d.pkl"%(experiment_number)
+	pickle.dump( np.asarray(encoded_testset), open(filename, 'wb'))
 
 # Run...
 train()

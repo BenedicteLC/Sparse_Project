@@ -1,7 +1,8 @@
-Experiment 1: Autoencoder only
-Experiment 2: RBM only
-Experiment 3: Sparse coding only
-Experiment 4: All 3
-Experiment 5: Autoencoder + RBM
-Experiment 6: Autoencoder + sparse coding
-Experiment 7: RBM + sparse coding
+Experiment 1: Autoencoder only 300
+Experiment 2: RBM only 300
+Experiment 3: Sparse coding only 300
+Experiment 4: All 3 100x3
+Experiment 5: Autoencoder + RBM 150x2
+Experiment 6: Autoencoder + sparse coding 150x2
+Experiment 7: RBM + sparse coding 150x2
+Experiment 8: All 3 300x3

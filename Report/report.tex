@@ -1,0 +1,137 @@
+\documentclass{article} % For LaTeX2e
+\usepackage{nips13submit_e,times}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{textcomp}
+\usepackage[utf8]{inputenc}
+\usepackage{array}
+\usepackage{pgfplots}
+\usepackage{caption}
+\usepackage{adjustbox} 
+\usepackage{graphicx}
+
+
+\begin{table}[h]
+\caption{Average training and validation accuracy for autoencoder hyper-parameter
+ search using a training subset of size 1000}
+\label{results-table}
+\begin{center}
+\begin{adjustbox}{width=1\textwidth}
+\begin{tabular}{cccc|rr}
+
+\multicolumn{1}{c}{\bf Learning rate}  
+&\multicolumn{1}{c}{\bf \# Hidden layers}  
+&\multicolumn{1}{c}{\bf \# Epochs} 
+&\multicolumn{1}{c}{\bf Noise prob.} 
+&\multicolumn{1}{|r}{\bf Accuracy (train.)}
+&\multicolumn{1}{r}{\bf Accuracy (valid.)}
+\\ \hline \\	
+0.01 & 50 & 10 & 0.3 & 0.684 & 0.587 \\
+0.01 & 50 & 10 & 0.5 & 0.621 & 0.554 \\
+0.01 & 50 & 10 & 0.1 & 0.720 & 0.603 \\
+0.01 & 30 & 10 & 0.1 & 0.707 & 0.606 \\
+0.01 & 70 & 10 & 0.1 & 0.714 & 0.602 \\
+0.01 & 140 & 10 & 0.1 & 0.699 & 0.592 \\
+0.01 & 30 & 5 & 0.1 & 0.707 & 0.596 \\
+0.01 & 30 & 15 & 0.1 & 0.712 & 0.610 \\
+0.05 & 30 & 15 & 0.1 & 0.714 & 0.619 \\
+0.01 & 30 & 15 & 0.1 & 0.722 & 0.599 \\
+
+\end{tabular}
+\end{adjustbox}
+\end{center}
+\end{table}
+
+
+\begin{table}[h]
+\caption{Average training and validation accuracy for RBM hyper-parameter
+ search using a training subset of size 1000}
+\label{results-table}
+\begin{center}
+\begin{adjustbox}{width=1\textwidth}
+\begin{tabular}{cccc|rr}
+
+\multicolumn{1}{c}{\bf Learning rate}  
+&\multicolumn{1}{c}{\bf \# Hidden layers}  
+&\multicolumn{1}{c}{\bf \# Epochs} 
+&\multicolumn{1}{c}{\bf \# CDk} 
+&\multicolumn{1}{|r}{\bf Accuracy (train.)}
+&\multicolumn{1}{r}{\bf Accuracy (valid.)}
+\\ \hline \\	
+0.01 & 50 & 10 & 3 & 0.685 & 0.611 \\
+0.01 & 70 & 10 & 3 & 0.670 & 0.595 \\
+0.01 & 30 & 10 & 3 & 0.676 & 0.581 \\
+0.01 & 50 & 5 & 3 & 0.644 & 0.575 \\
+0.01 & 50 & 15 & 3 & 0.687 & 0.606 \\
+0.01 & 50 & 10 & 1 & 0.665 & 0.600 \\
+0.01 & 50 & 10 & 5 & 0.667 & 0.583 \\
+0.05 & 50 & 10 & 3 & 0.629 & 0.558 \\
+0.005 & 50 & 10 & 3 & 0.669 & 0.593 \\
+0.01 & 60 & 10 & 3 & 0.695 & 0.599 \\
+
+\end{tabular}
+\end{adjustbox}
+\end{center}
+\end{table}
+
+
+\begin{table}[h]
+\caption{Average training and validation accuracy for sparse coding hyper-parameter
+ search using a training subset of size 1000}
+\label{results-table}
+\begin{center}
+\begin{adjustbox}{width=1\textwidth}
+\begin{tabular}{cccc|rr}
+
+\multicolumn{1}{c}{\bf Learning rate}  
+&\multicolumn{1}{c}{\bf \# Hidden layers}  
+&\multicolumn{1}{c}{\bf \# Epochs} 
+&\multicolumn{1}{c}{\bf L1} 
+&\multicolumn{1}{|r}{\bf Accuracy (train.)}
+&\multicolumn{1}{r}{\bf Accuracy (valid.)}
+\\ \hline \\	
+0.1 & 50 & 5 & 0.1 & 0.936 & 0.509 \\
+0.1 & 30 & 5 & 0.1 & 0.946 & 0.465 \\
+0.1 & 70 & 5 & 0.1 & 0.934 & 0.573 \\
+0.1 & 50 & 5 & 0.05 & 0.986 & 0.544 \\
+0.1 & 70 & 5 & 0.05 & 0.983 & 0.627 \\
+0.1 & 50 & 5 & 0.2 & 0.824 & 0.452 \\
+0.2 & 50 & 5 & 0.05 & 0.986 & 0.530 \\
+0.05 & 50 & 5 & 0.05 & 0.981 & 0.566 \\
+0.1 & 50 & 10 & 0.05 & 0.984 & 0.541 \\
+0.1 & 100 & 5 & 0.05 & 0.957 & 0.630 \\
+
+\end{tabular}
+\end{adjustbox}
+\end{center}
+\end{table}
+
+
+\begin{table}[h]
+\caption{Average training and validation accuracy based on model combinations}
+\label{results-table}
+\begin{center}
+\begin{adjustbox}{width=1\textwidth}
+\begin{tabular}{ccc|rr}
+
+\multicolumn{1}{c}{\bf \# Autoencoder features}  
+&\multicolumn{1}{c}{\bf \# RBM features}  
+&\multicolumn{1}{c}{\bf \# Sparse coding features} 
+&\multicolumn{1}{|r}{\bf Accuracy (train.)}
+&\multicolumn{1}{r}{\bf Accuracy (valid.)}
+\\ \hline \\	
+300 & 0 & 0 & 0.838 & 0.816 \\
+0 & 300 & 0 & 0.837 & 0.820 \\
+0 & 0 & 300 & 0.854 & 0.816  \\
+100 & 100 & 100 & 0.897 & 0.858 \\
+150 & 150 & 0 & 0.850 & 0.829 \\
+150 & 0 & 150 & 0.885 & 0.849 \\
+0 & 150 & 150 & 0.883& 0.849 \\
+300 & 300 & 300 & 0.859 & 0.834 \\
+
+\end{tabular}
+\end{adjustbox}
+\end{center}
+\end{table}
+
+NOTE: Test accuracy with best model (100x3) is 86.8\%.

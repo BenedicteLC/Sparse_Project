@@ -5,7 +5,7 @@ from sparsecode import *
 import pickle
 
 #NOTE: Always make sure to use the right number.
-experiment_number = 200
+experiment_number = 100
 
 def get_dictionary():
     """
@@ -106,23 +106,19 @@ def get_representation():
     filename = "Models/valid_outputs.pkl"
     pickle.dump( np.asarray(validset_out) , open(filename, 'wb'))
 
-    #Note: only need to do it for the best hyper-params at the end.
-    # counter = 0
-    # print "Encoding the testset..."
-    # for input,target in testset:
-    #     #Run ISTA
-    #     h = myObject.infer(input)
-    #     encoded_testset.append(h)
-    #     testset_out.append(target)
-        
-    #     counter +=1
-    #     if counter == 1000:
-    #         break
+    Note: only need to do it for the best hyper-params at the end.
+    
+    print "Encoding the testset..."
+    for input,target in testset:
+        #Run ISTA
+        h = myObject.infer(input)
+        encoded_testset.append(h)
+        testset_out.append(target)        
 
-    # filename = "Models/SC/testset%d.pkl"%(experiment_number)
-    # pickle.dump( np.asarray(encoded_testset), open(filename, 'wb'))
-    # filename = "Models/test_outputs.pkl"
-    # pickle.dump( np.asarray(testset_out) , open(filename, 'wb'))
+    filename = "Models/SC/testset%d.pkl"%(experiment_number)
+    pickle.dump( np.asarray(encoded_testset), open(filename, 'wb'))
+    filename = "Models/test_outputs.pkl"
+    pickle.dump( np.asarray(testset_out) , open(filename, 'wb'))
 
 # Run...
 get_dictionary()
