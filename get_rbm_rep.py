@@ -7,7 +7,7 @@ import mlpython.datasets.store as dataset_store
 from rbm import RBM
 import pickle
 
-experiment_number = 0
+experiment_number = 150
 
 def train():
 

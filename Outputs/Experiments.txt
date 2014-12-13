@@ -1,0 +1,3 @@
+Experiment 1, training accuracy: 0.838, validation accuracy: 0.816 
+Experiment 2, training accuracy: 0.837, validation accuracy: 0.820 
+Experiment 5, training accuracy: 0.850, validation accuracy: 0.829 

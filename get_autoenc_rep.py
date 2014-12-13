@@ -7,7 +7,7 @@ import mlpython.datasets.store as dataset_store
 from autoencoder import Autoencoder
 import pickle
 
-experiment_number = 600
+experiment_number = 150
 
 def train():
 
