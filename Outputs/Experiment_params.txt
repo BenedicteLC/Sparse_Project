@@ -1,0 +1,7 @@
+Experiment 1: Autoencoder only
+Experiment 2: RBM only
+Experiment 3: Sparse coding only
+Experiment 4: All 3
+Experiment 5: Autoencoder + RBM
+Experiment 6: Autoencoder + sparse coding
+Experiment 7: RBM + sparse coding

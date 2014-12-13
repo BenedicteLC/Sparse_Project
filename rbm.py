@@ -22,8 +22,8 @@ class RBM(mlgen.Learner):
     """
 
     def __init__(self, 
-                 lr,             # learning rate
-                 hidden_size,    # hidden layer size
+                 lr=0.1,             # learning rate
+                 hidden_size=50,    # hidden layer size
                  CDk=1,          # nb. of Gibbs sampling steps
                  seed=1234,      # seed for random number generator
                  n_epochs=10     # nb. of training iterations
@@ -34,6 +34,20 @@ class RBM(mlgen.Learner):
         self.CDk = CDk
         self.seed = seed
         self.rng = np.random.mtrand.RandomState(self.seed)   # create random number generator
+
+    def initialize(self, W, b):
+        self.W = W
+        self.b = b
+
+    def encode(self, input):
+        
+        h_x = np.zeros((self.hidden_size,),dtype=np.double)       
+            
+        # Forward conditional prob:                
+        fwd_preactivation = np.dot(np.transpose(self.W), input) + self.b                
+        sigmoid(fwd_preactivation, h_x)
+            
+        return h_x
 
     def train(self,trainset):
         """
@@ -59,7 +73,7 @@ class RBM(mlgen.Learner):
         self.x_tilde = np.zeros(input_size,dtype=np.double)                   
         
         for it in range(self.n_epochs):
-            for input in trainset:
+            for input,target in trainset:
                 
                 ################
                 # Perform CD-k
@@ -99,6 +113,8 @@ class RBM(mlgen.Learner):
                                 
                 # Updating the parameters
                 self.update()        
+
+            print "Epoch #%d"%it
                  
                 
     def update(self):

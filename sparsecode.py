@@ -1,6 +1,7 @@
 
 from mlpython.learners.generic import Learner
 import numpy as np
+import datetime
 
 class SparseCode(Learner):
 	"""
@@ -70,7 +71,7 @@ class SparseCode(Learner):
 			self.initialize(input_size)
 		# NOTE: It's much easier to debug with a subset of the data, because training is very slow. Remove [:1000] to train on ALL data.
 		# Otherwise, replace 1000 with some other number of training inputs.
-		inputs = [input for input, target in trainset][:1000]
+		inputs = [input for input, target in trainset]
 		for it in range(self.n_epochs):
 			print "Epoch # " + str(it)
 			self.dict_update(inputs)
@@ -116,7 +117,8 @@ class SparseCode(Learner):
 		counter=1
 		for input in inputs:
 			if (counter % 100 == 0):
-				print '\r' + "Inference: " + str(counter) + ' out of ' + str(len(inputs)),
+				print  "Inference: " + str(counter) + ' out of ' + str(len(inputs)), #'\r' +
+				print "time", datetime.datetime.now()
 			counter += 1
 			h = self.infer(input)
 			A += np.outer(h, h.T)

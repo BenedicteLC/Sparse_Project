@@ -5,7 +5,7 @@ from sparsecode import *
 import pickle
 
 #NOTE: Always make sure to use the right number.
-experiment_number = 11
+experiment_number = 200
 
 def get_dictionary():
     """
@@ -125,5 +125,5 @@ def get_representation():
     # pickle.dump( np.asarray(testset_out) , open(filename, 'wb'))
 
 # Run...
-#get_dictionary()
+get_dictionary()
 get_representation()
