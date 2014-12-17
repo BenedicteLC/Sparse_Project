@@ -5,12 +5,89 @@
 \usepackage{textcomp}
 \usepackage[utf8]{inputenc}
 \usepackage{array}
+\usepackage{amsmath}
 \usepackage{pgfplots}
 \usepackage{caption}
 \usepackage{adjustbox} 
 \usepackage{graphicx}
 
+\title{Sparse Coding and Unsupervised Feature Ensembling}
 
+\author{
+Gabriel Forgues \\
+\texttt{gabriel.forgues@mail.mcgill.ca} \\
+\And 
+Benedicte Leonard-Cannon \\
+\texttt{benedicte.leonard-cannon@mail.mcgill.ca} \\
+}
+\nipsfinalcopy
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+There has been a significant research effort in recent years on algorithms to extract good features from unsupervised data. A few of these have been successful on many different tasks, such as denoising autoencoders, restricted Boltzmann machines (RMBs), and sparse code dictionary learning. In this project, we evaluate whether the combination of different types of features can be beneficial compared to an equivalent number of parameters stemming from a single feature learning model. We take our own previous implementations of RBMs and denoising autoencoders and add to it a new implementation for sparse coding. We evaluate the effectiveness of the different models on a simple object recognition task. Letter recognition gives a good basis for evaluating sparse code filters, since each class has very simple but distinct shapes which can easily be recognized when visualizing a sparse code's dictionary filters.
+
+\section{Sparse Code}
+Sparse coding is a general method which aims to learn a dictionary of features in such a way that inputs can be represented as a sparse combination of these features. This is in contrast to RBMs and denoising autoencoders where, although regularization can be incorporated into their learning algorithms, were not explicitly designed to induce sparse representations.
+
+As is the case for RBMs and autoencoders, sparse coding is an unsupervised learning algorithm which learns features solely from unlabelled data. The intuition behind the algorithm can be more readily understood from the perspective of human vision. When considering the set of all possible images, an immense majority of these would appear to humans simply as noise with no inherent structure. The subset of natural images is a very small fraction of all possible images, and humans can easily recognize them from the way they are distinctly structured. We can decompose natural images into a set of common structures. For example, a door would be composed of two parallel horizontal edges, two parallel vertical edges, and perhaps a round doorknob. The doorknob could be further decomposed into a set of slightly curved edges, joined together in the shape of a circle. Although there might exist a large amount of structural components in the set of all natural images, any given image would only contain a few of these structural components. Sparse coding aims to build a dictionary of these common structures, and represent each natural image as a sparse composition of these structures. By enforcing a strong sparsity constraint, we ensure that each image can be adequately represented by a very small number of these structures. The sparsity might then favour the extraction of more high-level features which are dense in meaning compared to more low-level features such as Gabor filters.
+
+\subsection{Training objective}
+More formally, we denote $D$ the dictionary of features and $h(x)$ as the sparse representation of input $x$ which uses $D$ as a basis.
+
+Then, the training objective is given as:
+
+\begin{equation}
+\min_{\text{D}} \frac{1}{T} \sum_{t=1}^{T} \min_{h^{(t)}} \frac{1}{2} \Vert x^{(t)} - \text{D} \text{h}^{(t)} \Vert_{2}^{2} + \lambda \Vert h^{(t)} \Vert_{1}
+\end{equation}
+
+The first term is the reconstruction loss, which the training objective aims to minimize. The second term is the sparsity constraint on $h$, with an L1 regularization coefficient of $\lambda$.
+
+\subsection{Inference with ISTA}
+Inferring a sparse representation $h^{(t)}$ for an input $x^{(t)}$ given a dictionary $D$ is an optimization problem:
+
+\begin{equation}
+h(x^{(t)}) = \arg\min_{h^{(t)}} \frac{1}{2} \Vert x^{(t)} - \text{D} \text{h}^{(t)} \Vert_{2}^{2} + \lambda \Vert h^{(t)} \Vert_{1}
+\end{equation}
+
+We can optimize this by taking the gradient:
+
+\begin{equation}
+\nabla_{h^{(t)}} l (x^{(t)}) = D^T(D h^{(t)}) + \lambda \text{sign} (h^{(t)})
+\end{equation}
+
+But since the L1 norm is not differentiable at 0, we use the Iterative Shrinkage and Thresholding Algorithm (ISTA) instead.
+
+TODO: ista alg here
+
+\subsection{Dictionary update}
+We update the dictionary with block-coordinate gradient descent.
+
+\begin{equation}
+A = \sum_{t=1}^T h(x^{(t)}) h(x^{(t)})^T
+\end{equation}
+\begin{equation}
+B = \sum_{t=1}^T x^{(t)} h(x^{(t)})^T
+\end{equation}
+
+TODO: dictionary update alg here
+
+\section{Classifier architecture}
+We wish to compare the effectiveness of three unsupervised learning algorithms. To do so, we train the same classifier on the set of features extracted from each unsupervised learning algorithm, or combinations of these sets of features.
+
+\subsection{Feature extraction}
+Once all the unsupervised learning algorithms have been trained, we can use them to extract features from some input $x$. The feature extraction process is the same for RBMs and auto-encoders, and can be viewed as a single hidden layer feed-forward neural network. Given the learned set of weights $W$ and biases $b$, we extract features with the standard forward propagation computation:
+\begin{equation}
+h(x) = \text{sigmoid}(W^T x + b)
+\end{equation}
+The values of the hidden layer are then used as input features to the classifier.
+
+For the sparse coding algorithm, feature extraction proceeds as described in the ISTA algorithm. We infer a sparse representation $h(x)$ using the learned dictionary $D$, and then use this sparse $h(x)$ as features for the classifier.
+
+The experimental pipeline works as follows. We first train each unsupervised learning algorithm independently (i.e. RBM, auto-encoder and sparse coding). We select hyper-parameters for each model based on its performance on a validation set. However, because the sparse coding algorithm is very slow (especially due to ISTA), we do the hyper-parameter search on a subset of only 1,000 training images. We then use the best hyper-parameters for each model to extract features from the data, and compare the effectiveness of the features extracted by each algorithm. Although our hyper-parameter exploration considers varying the number of hidden units (i.e. number of features) to evaluate its impact on validation accuracy, we ignore this hyper-parameter when comparing unsupervised algorithms. Instead, when we compare the performance between different algorithms (independently or in combinations), we fix the number of hidden units to be the same for all models to ensure a fair comparison. We use an SVM with an RBF kernel as a good general-purpose classifier in all feature comparisons.
+
+\section{Results}
 \begin{table}[h]
 \caption{Average training and validation accuracy for autoencoder hyper-parameter
  search using a training subset of size 1000}
@@ -20,7 +97,7 @@
 \begin{tabular}{cccc|rr}
 
 \multicolumn{1}{c}{\bf Learning rate}  
-&\multicolumn{1}{c}{\bf \# Hidden layers}  
+&\multicolumn{1}{c}{\bf \# Hidden units}  
 &\multicolumn{1}{c}{\bf \# Epochs} 
 &\multicolumn{1}{c}{\bf Noise prob.} 
 &\multicolumn{1}{|r}{\bf Accuracy (train.)}
@@ -34,7 +111,7 @@
 0.01 & 140 & 10 & 0.1 & 0.699 & 0.592 \\
 0.01 & 30 & 5 & 0.1 & 0.707 & 0.596 \\
 0.01 & 30 & 15 & 0.1 & 0.712 & 0.610 \\
-0.05 & 30 & 15 & 0.1 & 0.714 & 0.619 \\
+0.05 & 30 & 15 & 0.1 & 0.714 & \textbf{0.619} \\
 0.01 & 30 & 15 & 0.1 & 0.722 & 0.599 \\
 
 \end{tabular}
@@ -52,13 +129,13 @@
 \begin{tabular}{cccc|rr}
 
 \multicolumn{1}{c}{\bf Learning rate}  
-&\multicolumn{1}{c}{\bf \# Hidden layers}  
+&\multicolumn{1}{c}{\bf \# Hidden units}  
 &\multicolumn{1}{c}{\bf \# Epochs} 
 &\multicolumn{1}{c}{\bf \# CDk} 
 &\multicolumn{1}{|r}{\bf Accuracy (train.)}
 &\multicolumn{1}{r}{\bf Accuracy (valid.)}
 \\ \hline \\	
-0.01 & 50 & 10 & 3 & 0.685 & 0.611 \\
+0.01 & 50 & 10 & 3 & 0.685 & \textbf{0.611} \\
 0.01 & 70 & 10 & 3 & 0.670 & 0.595 \\
 0.01 & 30 & 10 & 3 & 0.676 & 0.581 \\
 0.01 & 50 & 5 & 3 & 0.644 & 0.575 \\
@@ -84,7 +161,7 @@
 \begin{tabular}{cccc|rr}
 
 \multicolumn{1}{c}{\bf Learning rate}  
-&\multicolumn{1}{c}{\bf \# Hidden layers}  
+&\multicolumn{1}{c}{\bf \# Hidden units}  
 &\multicolumn{1}{c}{\bf \# Epochs} 
 &\multicolumn{1}{c}{\bf L1} 
 &\multicolumn{1}{|r}{\bf Accuracy (train.)}
@@ -99,16 +176,40 @@
 0.2 & 50 & 5 & 0.05 & 0.986 & 0.530 \\
 0.05 & 50 & 5 & 0.05 & 0.981 & 0.566 \\
 0.1 & 50 & 10 & 0.05 & 0.984 & 0.541 \\
-0.1 & 100 & 5 & 0.05 & 0.957 & 0.630 \\
+0.1 & 100 & 5 & 0.05 & 0.957 & \textbf{0.630} \\
 
 \end{tabular}
 \end{adjustbox}
 \end{center}
 \end{table}
 
+From the results in Table 3, we first notice that the sparse coding algorithm seems much more sensitive to hyper-parameter selection than the two other algorithms. We obtained validation set accuracies as low as 45.2\% and as high as 63\%. Sparse coding also seems more susceptible to overfitting, which we notice from the fact that training set accuracies are much higher than the validation set (up to 98.6\%). Of course, these results are on a very small subset of the entire training data (1,000 out of 32,000) due to the algorithm's slow training time. Somewhat surprisingly, we obtained better results from relaxing the L1 sparsity constraint.
+\begin{figure}
+\centering
+%\includegraphics[scale=1]{figures/filters_50.png}
+\includegraphics[scale=0.577]{figures/filters_100_clean.png}
+\quad\quad\quad
+\includegraphics[scale=1]{figures/filters_100_noisy.png}
+\caption{Sparse code dictionary filters learned with L1=0.1 (left) or L1=0.05 (right). Although the features learned from a higher regularization constant are more visually distinct, the noisier filters produced slightly higher classification accuracy}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[scale=1]{figures/filters_50.png}
+\caption{Sparse code dictionary filters with fewer features and higher regularization (L1=0.2). The features are more high-level and often represent distinct letters.}
+\end{figure}
+
+In Figures 1, we compare the dictionary filters learned from different L1 regularization constants. We can see that the higher sparsity constraint of L1=0.1 causes the dictionary to learn letter strokes. We can find features of vertical strokes, as well as many differently oriented curved strokes. We can also find high-level features which represent the entire letter (e.g. the second column contains the letter "e" and "a"). The same figure compares filters learned with a lower sparsity constraint of L1=0.05. As might be expected, relaxing the sparsity constraint caused the dictionary to learn significantly more noisy filters. However, it was surprising that these noisier features produced better classification accuracy. This might be explained by the fact that relaxing the sparsity constraint makes it much easier to learn good reconstructions of the input. The resulting dictionary might not be as visually appealing, but it probably fits the data better. In Figure 2, we increase the sparsity constraint even higher to L1=0.2 and learn fewer features, hoping to find many distinct letters. We again observe simple vertical or rounded strokes, but also find many letters of different shapes and sizes ("a", "e", "p", "z", to name a few).
+
+With the visual confirmation that we are learning sensible features, we then compared the performance of an SVM trained on the different types of unsupervised features. In Table 4, we can see that the autoencoder, RBM and sparse coding approaches all produce nearly identical accuracy on the validation set when trained with 300 features each (i.e. 300 hidden units in each model). However, an SVM trained on the combination of 100 features from each model performed significantly better compared to features from a single model (85.6\% vs ~82\%). Any combination of 150 features from two out of the three models performed better than each model alone, but worse than the combination of all three. However, we were surprised to find that an SVM trained on 300 features from each model (therefore 3x as many features as all previous comparisons) did not perform the best. 
+
+Our results suggest that, for some fixed number of features, it is better to take a third of all features from each of three different unsupervised learning algorithms rather than take all features from a single one. The three learning algorithms are sufficiently different to extract different  features whose combination is beneficial. However, having more features is not always better. The number of features to extract still requires some tuning to obtain optimal results.
+
+
+
 
 \begin{table}[h]
-\caption{Average training and validation accuracy based on model combinations}
+\caption{Average train and test accuracy based on model combinations}
 \label{results-table}
 \begin{center}
 \begin{adjustbox}{width=1\textwidth}
@@ -117,13 +218,13 @@
 \multicolumn{1}{c}{\bf \# Autoencoder features}  
 &\multicolumn{1}{c}{\bf \# RBM features}  
 &\multicolumn{1}{c}{\bf \# Sparse coding features} 
-&\multicolumn{1}{|r}{\bf Accuracy (train.)}
-&\multicolumn{1}{r}{\bf Accuracy (valid.)}
+&\multicolumn{1}{|r}{\bf Accuracy (train)}
+&\multicolumn{1}{r}{\bf Accuracy (test)}
 \\ \hline \\	
 300 & 0 & 0 & 0.838 & 0.816 \\
 0 & 300 & 0 & 0.837 & 0.820 \\
 0 & 0 & 300 & 0.854 & 0.816  \\
-100 & 100 & 100 & 0.897 & 0.858 \\
+100 & 100 & 100 & 0.897 & \textbf{0.858} \\
 150 & 150 & 0 & 0.850 & 0.829 \\
 150 & 0 & 150 & 0.885 & 0.849 \\
 0 & 150 & 150 & 0.883& 0.849 \\
@@ -135,3 +236,4 @@
 \end{table}
 
 NOTE: Test accuracy with best model (100x3) is 86.8\%.
+\end{document}
