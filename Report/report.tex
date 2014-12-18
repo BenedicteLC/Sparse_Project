@@ -10,6 +10,8 @@
 \usepackage{caption}
 \usepackage{adjustbox} 
 \usepackage{graphicx}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
 
 \title{Sparse Coding and Unsupervised Feature Ensembling}
 
@@ -26,12 +28,12 @@ Benedicte Leonard-Cannon \\
 \maketitle
 
 \section{Introduction}
-There has been a significant research effort in recent years on algorithms to extract good features from unsupervised data. A few of these have been successful on many different tasks, such as denoising autoencoders, restricted Boltzmann machines (RMBs), and sparse code dictionary learning. In this project, we evaluate whether the combination of different types of features can be beneficial compared to an equivalent number of parameters stemming from a single feature learning model. We take our own previous implementations of RBMs and denoising autoencoders and add to it a new implementation for sparse coding. We evaluate the effectiveness of the different models on a simple object recognition task. Letter recognition gives a good basis for evaluating sparse code filters, since each class has very simple but distinct shapes which can easily be recognized when visualizing a sparse code's dictionary filters.
+There has been a significant research effort in recent years to develop algorithms to extract good features from unsupervised data. Three of these methods that are often used in the literature include denoising autoencoders, restricted Boltzmann machines (RBMs), and sparse coding. These three approaches have very different training objectives, but they can all be used to extract features from unlabelled data. Due to their different training objectives, intuition would suggest that they might not learn identical features, and that the combination of these features could be beneficial for a classifier. In this project, we first compare the performances of three classifiers, each trained on features extracted using a single unsupervised feature extractor (RBMs, denoising auto-encoders and sparse coding). Then, we compare these results with classifiers trained on combinations of features from the three learning algorithms. We take our own previous implementations of RBMs and denoising autoencoders, which we use as two comparable baselines. We then add our own implementation of a sparse coding algorithm, and compare its performance as a stand-alone set of features or in feature combinations against the two baselines. We evaluate the effectiveness of the different models on a handwritten letter recognition task. Since the data is composed of very simple but distinct shapes, it is well suited for a sparse code algorithm. Indeed, we would expect the sparse code to learn visually interpretable dictionary features (i.e. letter strokes) which help us validate the correctness of our implementation.
 
-\section{Sparse Code}
+\section{Sparse Coding}
 Sparse coding is a general method which aims to learn a dictionary of features in such a way that inputs can be represented as a sparse combination of these features. This is in contrast to RBMs and denoising autoencoders where, although regularization can be incorporated into their learning algorithms, were not explicitly designed to induce sparse representations.
 
-As is the case for RBMs and autoencoders, sparse coding is an unsupervised learning algorithm which learns features solely from unlabelled data. The intuition behind the algorithm can be more readily understood from the perspective of human vision. When considering the set of all possible images, an immense majority of these would appear to humans simply as noise with no inherent structure. The subset of natural images is a very small fraction of all possible images, and humans can easily recognize them from the way they are distinctly structured. We can decompose natural images into a set of common structures. For example, a door would be composed of two parallel horizontal edges, two parallel vertical edges, and perhaps a round doorknob. The doorknob could be further decomposed into a set of slightly curved edges, joined together in the shape of a circle. Although there might exist a large amount of structural components in the set of all natural images, any given image would only contain a few of these structural components. Sparse coding aims to build a dictionary of these common structures, and represent each natural image as a sparse composition of these structures. By enforcing a strong sparsity constraint, we ensure that each image can be adequately represented by a very small number of these structures. The sparsity might then favour the extraction of more high-level features which are dense in meaning compared to more low-level features such as Gabor filters.
+As is the case for RBMs and autoencoders, sparse coding is an unsupervised learning algorithm which learns features solely from unlabelled data. The intuition behind the algorithm can be more readily understood from the perspective of human vision. When considering the set of all possible images, a large majority of these would appear to humans simply as noise with no inherent structure. The subset of natural images is a very small fraction of all possible images, and humans can easily recognize them from the way they are distinctly structured. We can decompose natural images into a set of common structures. For example, a door would be composed of two parallel horizontal edges, two parallel vertical edges, and perhaps a round doorknob. The doorknob could be further decomposed into a set of slightly curved edges, joined together in the shape of a circle. Although there might exist a large amount of structural components in the set of all natural images, any given image would only contain a few of these structural components. Sparse coding aims to build a dictionary of these common structures, and represent each natural image as a sparse composition of these structures. By enforcing a strong sparsity constraint, we ensure that each image can be adequately represented by a very small number of these structures. The sparsity might then favour the extraction of more high-level features which are dense in meaning compared to more low-level features such as Gabor filters.
 
 \subsection{Training objective}
 More formally, we denote $D$ the dictionary of features and $h(x)$ as the sparse representation of input $x$ which uses $D$ as a basis.
@@ -57,12 +59,24 @@ We can optimize this by taking the gradient:
 \nabla_{h^{(t)}} l (x^{(t)}) = D^T(D h^{(t)}) + \lambda \text{sign} (h^{(t)})
 \end{equation}
 
-But since the L1 norm is not differentiable at 0, we use the Iterative Shrinkage and Thresholding Algorithm (ISTA) instead.
+But since the L1 norm is not differentiable at 0, we use the Iterative Shrinkage and Thresholding Algorithm (ISTA) instead. The ISTA algorithm alternates between a step along the gradient of $h^{(t)}$, and a shrinkage to $0$ if $h^{(t)}$ is within a threshold distance $\alpha\lambda$ from $0$. This ensures that, although the gradient is non-differentiable at 0, the algorithm will converge instead of oscillating between a large positive or a large negative step when close to $0$.
 
-TODO: ista alg here
+\begin{algorithm}
+\caption{Iterative Shrinkage and Thresholding Algorithm (ISTA)}
+\begin{algorithmic}[1]
+\State $h^{(t)}\gets $ zero vector
+\State $h'^{(t)}\gets $ non-zero vector \Comment{$h'$ will store stepwise updates of $h$}
+\While{$|h^{(t)} - h'^{(t)}| > \epsilon$}\Comment{$\epsilon$ is the convergence threshold}
+	\State $h^{(t)}\gets h'^{(t)}$
+	\State $h'^{(t)}\gets h^{(t)} - \alpha D^T(Dh^{(t)} - x^{(t)})$ \Comment{$\alpha$ is the learning rate}
+	\State $h'^{(t)}\gets \text{sign}(h'^{(t)}) \text{max}(|h'^{(t)}| - \alpha\lambda, 0)$ \Comment{$\lambda$ is the L1 regularization term}
+\EndWhile
+\State\Return $h^{(t)}$
+\end{algorithmic}
+\end{algorithm}
 
-\subsection{Dictionary update}
-We update the dictionary with block-coordinate gradient descent.
+\subsection{Dictionary learning}
+With ISTA, we can infer $h^{(t)}$ for each $x^{(t)}$ given a dictionary $D$. However, the dictionary $D$ must also be learned. We update the dictionary with block-coordinate gradient descent. We refer to the class notes for the full derivation, and instead give the two results which we will use to apply column-wise gradient updates to the dictionary.
 
 \begin{equation}
 A = \sum_{t=1}^T h(x^{(t)}) h(x^{(t)})^T
@@ -71,13 +85,35 @@ A = \sum_{t=1}^T h(x^{(t)}) h(x^{(t)})^T
 B = \sum_{t=1}^T x^{(t)} h(x^{(t)})^T
 \end{equation}
 
-TODO: dictionary update alg here
+
+The dictionary learning proceeds with two alternating steps. First, we randomly initialize the dictionary $D$ and infer a sparse representation $h^{(t)}$ for each input $x^{(t)}$ by performing ISTA until convergence. Then, we take steps along the gradient for each column $D_{.,j}$ until convergence. We then repeat the $h^{(t)}$ inference and dictionary update steps for some fixed number of epochs, at which point the dictionary will have converged to a good basis for sparse representations of the data.
+
+
+\begin{algorithm}
+\caption{Batch dictionary update with block-coordinate descent}
+\begin{algorithmic}[1]
+\State $D\gets$ random initialization
+\While{$D$ has not converged} 
+	\For{each $x^{(t)}$}
+		\State infer $h^{(t)}$ \Comment{inference done with ISTA}
+	\EndFor
+	\State compute A, B using equations (4) and (5) above
+	\While{$D$ has not converged}
+		\For{each column $D_{.,j}$}
+			\State $D_{.,j}\gets \frac{1}{A_{j,j}} (B_{.,j} - D A_{.,j} + D_{.,j} A_{j,j})$
+			\State $D_{.,j}\gets \frac{D_{.,j}}{\Vert D_{.,j} \Vert_2}$ \Comment{normalization step}
+		\EndFor
+	\EndWhile
+\EndWhile
+\State\Return $D$
+\end{algorithmic}
+\end{algorithm}
 
 \section{Classifier architecture}
 We wish to compare the effectiveness of three unsupervised learning algorithms. To do so, we train the same classifier on the set of features extracted from each unsupervised learning algorithm, or combinations of these sets of features.
 
 \subsection{Feature extraction}
-Once all the unsupervised learning algorithms have been trained, we can use them to extract features from some input $x$. The feature extraction process is the same for RBMs and auto-encoders, and can be viewed as a single hidden layer feed-forward neural network. Given the learned set of weights $W$ and biases $b$, we extract features with the standard forward propagation computation:
+Once all the unsupervised learning algorithms have been trained, we can use them to extract features from some input $x$. The feature extraction process is the same for RBMs and auto-encoders, and can be viewed as a single hidden layer feed-forward neural network. Although their training objectives differ, both RBMs and auto-encoders effectively learn a set of weights $W$ and biases $b$ to connect a set of inputs to a set of hidden units. Given the learned set of weights $W$ and biases $b$, we extract features by applying a standard feed-forward propagation:
 \begin{equation}
 h(x) = \text{sigmoid}(W^T x + b)
 \end{equation}
