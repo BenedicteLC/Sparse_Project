@@ -47,7 +47,7 @@ Then, the training objective is given as:
 The first term is the reconstruction loss, which the training objective aims to minimize. The second term is the sparsity constraint on $h$, with an L1 regularization coefficient of $\lambda$.
 
 \subsection{Inference with ISTA}
-However, inferring a sparse representation $h^{(t)}$ for an input $x^{(t)}$ given a dictionary $D$ is now a complication function:
+However, inferring a sparse representation $h^{(t)}$ for an input $x^{(t)}$ given a dictionary $D$ is now a complicated function:
 
 \begin{equation}
 h(x^{(t)}) = \arg\min_{h^{(t)}} \frac{1}{2} \Vert x^{(t)} - D h^{(t)} \Vert_{2}^{2} + \lambda \Vert h^{(t)} \Vert_{1}
@@ -115,7 +115,7 @@ The dictionary learning proceeds with two alternating steps. First, we randomly 
 \end{algorithm}
 
 \section{Classifier architecture}
-We wish to compare the effectiveness of three unsupervised learning algorithms. To do so, we train the same classifier on the set of features extracted from each unsupervised learning algorithm, or combinations of these sets of features. We use a support vector machine (SVM) with an RBF kernel (implemented by scikit-learn\footnote{Scikit-learn: \url{scikit-learn.org}} as a good general-purpose classifier in all feature comparisons.
+We wish to compare the effectiveness of three unsupervised learning algorithms. To do so, we train the same classifier on the set of features extracted from each unsupervised learning algorithm, or combinations of these sets of features. We use a support vector machine (SVM) with an RBF kernel (implemented by scikit-learn\footnote{Scikit-learn: \url{scikit-learn.org}}) as a good general-purpose classifier in all feature comparisons.
 
 \subsection{Feature extraction}
 Once all the unsupervised learning algorithms have been trained, we can use them to extract features from some input $x$. The feature extraction process is the same for RBMs and autoencoders, and can be viewed as a single hidden layer feed-forward neural network. Although their training objectives differ, both RBMs and autoencoders effectively learn a set of weights $W$ and biases $b$ to connect a set of inputs to a set of hidden units. Given the learned set of weights $W$ and biases $b$, we extract features by applying a standard feed-forward propagation:
@@ -126,13 +126,12 @@ The values of the hidden layer are then used as input features to the classifier
 
 For the sparse coding algorithm, feature extraction proceeds as described in the ISTA algorithm. We infer a sparse representation $h(x)$ using the learned dictionary $D$, and then use this sparse $h(x)$ as features for the classifier.
 
-For all experiments, we use the pre-defined data splits from the OCR letters dataset, with $32,152$ training, $10,000$ validation and $10,000$ test images. The experimental pipeline works as follows. We first train each unsupervised learning algorithm independently (i.e. RBM, autoencoder and sparse coding). We select hyper-parameters for each model based on its performance on a validation set. However, because the sparse coding algorithm is very slow (especially due to ISTA), we do the hyper-parameter search on a subset of only 1,000 training images. We then use the best hyper-parameters for each model to extract features from the data, and compare the effectiveness of the features extracted by each algorithm. Although our hyper-parameter exploration considers varying the number of hidden units (i.e. number of features) to evaluate its impact on validation accuracy, we ignore this hyper-parameter when comparing unsupervised algorithms. Instead, when we compare the performance between different algorithms (independently or in combinations), we fix the number of hidden units to be the same for all models to ensure a fair comparison. Finally, we train SVMs all these sets of features, this time using the entire training set, and then evaluate their performance on the test set.
+For all experiments, we use the pre-defined data splits from the OCR letters dataset, with $32,152$ training, $10,000$ validation and $10,000$ test images. The experimental pipeline works as follows. We first train each unsupervised learning algorithm independently (i.e. RBM, autoencoder and sparse coding). We select hyper-parameters for each model based on its performance on the validation set. However, because the sparse coding algorithm is very slow (especially due to ISTA), we do the hyper-parameter search on a subset of only 1,000 training images. We then use the best hyper-parameters for each model to extract features from the entire data set, and compare the effectiveness of the features extracted by each algorithm. Although our hyper-parameter exploration considers varying the number of hidden units (i.e. number of features) to evaluate its impact on validation accuracy, we ignore this hyper-parameter when comparing unsupervised algorithms on the entire training set. Instead, when we compare the performance between different algorithms (independently or in combinations), we fix the number of hidden units to a total of 300 for all models to ensure a fair comparison; we gather $300$ features from individual models (autoencoder, RBM, sparse coding), two times $150$ features when combining two models and three times $100$ features when combining all three. Using the best hyper-parameter configurations, we train a total of seven SVMs on these sets of features and then evaluate their performance on the test set.
 
 \section{Results}
-\subsection{Hyperparameter optimization}
+\subsection{Hyper-parameter optimization}
 \begin{table}[h]
-\caption{Average training and validation accuracy for denoising autoencoder hyper-parameter
- search using a training subset of size 1000}
+\caption{Average training and validation accuracy for an SVM with denoising autoencoder features using a training subset of size 1000}
 \label{results-table}
 \begin{center}
 \begin{adjustbox}{width=1\textwidth}
@@ -163,8 +162,8 @@ For all experiments, we use the pre-defined data splits from the OCR letters dat
 
 
 \begin{table}[h]
-\caption{Average training and validation accuracy for RBM hyper-parameter
- search using a training subset of size 1000}
+\caption{Average training and validation accuracy for an SVM with RBM features
+ using a training subset of size 1000}
 \label{results-table}
 \begin{center}
 \begin{adjustbox}{width=1\textwidth}
@@ -195,8 +194,8 @@ For all experiments, we use the pre-defined data splits from the OCR letters dat
 
 
 \begin{table}[h]
-\caption{Average training and validation accuracy for sparse coding hyper-parameter
- search using a training subset of size 1000}
+\caption{Average training and validation accuracy for an SVM with sparse coding features
+ using a training subset of size 1000}
 \label{results-table}
 \begin{center}
 \begin{adjustbox}{width=1\textwidth}
@@ -225,7 +224,7 @@ For all experiments, we use the pre-defined data splits from the OCR letters dat
 \end{center}
 \end{table}
 
-From the results in Tables 1 to 3, we first notice that the sparse coding algorithm seems much more sensitive to hyper-parameter selection than the two other algorithms. We obtained validation set accuracies as low as 45.2\% and as high as 63\%. Sparse coding also seems more susceptible to overfitting, which we notice from the fact that training set accuracies are much higher than the validation set (up to 98.6\%). Of course, these results are on a very small subset of the entire training data ($1,000$ out of $32,152$) due to the algorithm's slow training time. We would expect overfitting to be less of a problem when using the entire training set. As might be expected, we also find that increasing the capacity of the sparse representation leads to higher accuracy. Somewhat surprisingly, we obtained better results from relaxing the L1 sparsity constraint.
+From the results in Tables 1 to 3, we first notice that the sparse coding algorithm seems much more sensitive to hyper-parameter selection than the other two algorithms. In the case of sparse coding, we obtained validation set accuracies as low as 45.2\% and as high as 63.0\%. Sparse coding also seems more susceptible to overfitting, which we notice from the fact that training set accuracies are much higher than the validation set (up to 98.6\%). Of course, these results are on a very small subset of the entire training data ($1,000$ out of $32,152$) due to the algorithm's slow training time. We would expect overfitting to be less of a problem when using the entire training set. As might be expected, we also find that increasing the capacity of the sparse representation leads to higher accuracy. Somewhat surprisingly, we obtained better results from relaxing the L1 sparsity constraint.
 \begin{figure}
 \centering
 %\includegraphics[scale=1]{figures/filters_50.png}
